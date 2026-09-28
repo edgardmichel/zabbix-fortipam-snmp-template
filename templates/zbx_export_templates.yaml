@@ -1,0 +1,1507 @@
+zabbix_export:
+  version: '7.4'
+  template_groups:
+    - uuid: 7df96b18c230490a9a0a9e2307226338
+      name: Templates
+    - uuid: 36bff6c29af64692839d077febfc7079
+      name: 'Templates/Network devices'
+  templates:
+    - uuid: 37ef4abdf60343d7afd0fc434bbd46b1
+      template: 'Fortinet FortiPAM by SNMP'
+      name: 'Fortinet FortiPAM by SNMP'
+      groups:
+        - name: Templates
+        - name: 'Templates/Network devices'
+      items:
+        - uuid: 7e1a72033cb543c4af537243505b9bee
+          name: 'FortiPAM: Number of administrators'
+          type: SNMP_AGENT
+          snmp_oid: 'get[.1.3.6.1.4.1.12356.100.1.2.100.1.0]'
+          key: fortipam.admin.count
+          delay: 10m
+          tags:
+            - tag: class
+              value: information
+            - tag: component
+              value: security
+          triggers:
+            - uuid: 4144bf589fd44c1aa2d40969148c23ff
+              expression: 'change(/Fortinet FortiPAM by SNMP/fortipam.admin.count)<>0'
+              name: 'FortiPAM: Administrator count changed'
+              priority: WARNING
+        - uuid: fcde56547c4242758c3144bcdbdf75bb
+          name: 'FortiPAM: Authentication EAGAIN errors'
+          type: SNMP_AGENT
+          snmp_oid: 'get[1.3.6.1.4.1.12356.101.10.116.1.2.0]'
+          key: fortipam.auth.eagain.total
+          tags:
+            - tag: class
+              value: information
+            - tag: component
+              value: authentication
+          triggers:
+            - uuid: 389a7614c40c4f878ef6a4c46aceee56
+              expression: 'change(/Fortinet FortiPAM by SNMP/fortipam.auth.eagain.total)>0'
+              name: 'FortiPAM: Auth EAGAIN Total'
+              priority: WARNING
+        - uuid: f06d40265bb641bba790d4c37afa4f85
+          name: 'FortiPAM: LDAP connection failures'
+          type: SNMP_AGENT
+          snmp_oid: 'get[1.3.6.1.4.1.12356.101.10.116.1.3.0]'
+          key: fortipam.auth.ldap.failures.total
+          tags:
+            - tag: class
+              value: information
+            - tag: component
+              value: authentication
+          triggers:
+            - uuid: 4c1e5dd9d77c4faa88bffc10a063afbb
+              expression: 'change(/Fortinet FortiPAM by SNMP/fortipam.auth.ldap.failures.total)>0'
+              name: 'FortiPAM: LDAP Failures detected'
+              priority: AVERAGE
+        - uuid: 4200fc42ac404849bb511293b496f3d7
+          name: 'FortiPAM: Authentication requests rate'
+          type: DEPENDENT
+          key: fortipam.auth.requests.rate
+          value_type: FLOAT
+          units: req/s
+          preprocessing:
+            - type: CHANGE_PER_SECOND
+          master_item:
+            key: fortipam.auth.requests.total
+          tags:
+            - tag: component
+              value: security
+        - uuid: 6dc6dd354dd14fcc8bdd2349f405c825
+          name: 'FortiPAM: Authentication requests - total'
+          type: SNMP_AGENT
+          snmp_oid: 'get[1.3.6.1.4.1.12356.101.10.116.1.1.0]'
+          key: fortipam.auth.requests.total
+          tags:
+            - tag: class
+              value: information
+            - tag: component
+              value: authentication
+        - uuid: 4e90474bfffe4fd49fe76967383d38bf
+          name: 'FortiPAM: Time since last configuration change'
+          type: CALCULATED
+          key: fortipam.config.change.age
+          delay: 5m
+          history: 90d
+          units: uptime
+          params: last(//fortipam.uptime)-last(//fortipam.config.lastchange)
+          tags:
+            - tag: class
+              value: security
+            - tag: component
+              value: configuration
+        - uuid: f032cfda49544ea29f02837045148766
+          name: 'FortiPAM: Configuration checksum'
+          type: SNMP_AGENT
+          snmp_oid: 'get[1.3.6.1.4.1.12356.101.22.1.2.0]'
+          key: fortipam.config.checksum
+          delay: 5m
+          history: 90d
+          value_type: CHAR
+          tags:
+            - tag: class
+              value: security
+            - tag: component
+              value: configuration
+        - uuid: 5bcd3bd9e70740a29f35c9cb754639e1
+          name: 'FortiPAM: Configuration last change uptime'
+          type: SNMP_AGENT
+          snmp_oid: 'get[1.3.6.1.4.1.12356.101.22.1.3.0]'
+          key: fortipam.config.lastchange
+          delay: 5m
+          units: uptime
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '0.01'
+          tags:
+            - tag: class
+              value: security
+            - tag: component
+              value: configuration
+        - uuid: e82eb486f88f4b5bbf89c55bfea24ea3
+          name: 'FortiPAM: Configuration serial'
+          type: SNMP_AGENT
+          snmp_oid: 'get[1.3.6.1.4.1.12356.101.22.1.1.0]'
+          key: fortipam.config.serial
+          delay: 5m
+          history: 90d
+          tags:
+            - tag: class
+              value: security
+            - tag: component
+              value: configuration
+        - uuid: 22570b0c05254907b662b5293c08c407
+          name: 'FortiPAM: CPU utilization'
+          type: SNMP_AGENT
+          snmp_oid: 'get[1.3.6.1.4.1.12356.101.4.1.3.0]'
+          key: fortipam.cpu.util
+          units: '%'
+          tags:
+            - tag: class
+              value: health
+            - tag: component
+              value: cpu
+          triggers:
+            - uuid: a18d9191b3534fa1922d7f2951b8ce2f
+              expression: 'min(/Fortinet FortiPAM by SNMP/fortipam.cpu.util,5m)>{$FORTIPAM.CPU.HIGH}'
+              name: 'High CPU'
+              priority: HIGH
+            - uuid: 7b84aeeb32174378866bd241615fd8fa
+              expression: |
+                min(/Fortinet FortiPAM by SNMP/fortipam.cpu.util,5m)>{$FORTIPAM.CPU.WARN}
+                and
+                min(/Fortinet FortiPAM by SNMP/fortipam.cpu.util,5m)<={$FORTIPAM.CPU.HIGH}
+              name: 'Warning CPU'
+              priority: WARNING
+        - uuid: 5e364a142083402991cdd59b5bcb752d
+          name: 'FortiPAM: Disk capacity'
+          type: SNMP_AGENT
+          snmp_oid: 'get[1.3.6.1.4.1.12356.101.4.1.7.0]'
+          key: fortipam.disk.total
+          delay: 1h
+          units: B
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '1048576'
+          tags:
+            - tag: class
+              value: health
+            - tag: component
+              value: disk
+        - uuid: 9424721736f54fb6a14979fb8f3a74b4
+          name: 'FortiPAM: Disk used'
+          type: SNMP_AGENT
+          snmp_oid: 'get[1.3.6.1.4.1.12356.101.4.1.6.0]'
+          key: fortipam.disk.used
+          delay: 5m
+          units: B
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '1048576'
+          tags:
+            - tag: class
+              value: health
+            - tag: component
+              value: disk
+        - uuid: 304fa92ed04147a6b0cd7d20f2cfac88
+          name: 'FortiPAM: Disk utilization'
+          type: CALCULATED
+          key: fortipam.disk.util
+          value_type: FLOAT
+          units: '%'
+          params: '100 * last(//fortipam.disk.used) / last(//fortipam.disk.total)'
+          tags:
+            - tag: class
+              value: health
+            - tag: component
+              value: disk
+          triggers:
+            - uuid: 82050b952a824663b5ca6474a3d12d79
+              expression: 'last(/Fortinet FortiPAM by SNMP/fortipam.disk.util)>{$FORTIPAM.DISK.HIGH}'
+              name: 'High Disk Utilization'
+              priority: HIGH
+            - uuid: ae09f4a5360a4679891507045388d0a0
+              expression: |
+                last(/Fortinet FortiPAM by SNMP/fortipam.disk.util)>{$FORTIPAM.DISK.WARN}
+                and
+                last(/Fortinet FortiPAM by SNMP/fortipam.disk.util)<={$FORTIPAM.DISK.HIGH}
+              name: 'Warning Disk Utilization'
+              priority: AVERAGE
+        - uuid: b4427b2dd5b44f0c9350d7cd5ad47fdc
+          name: 'FortiPAM: DNS forwarded'
+          type: SNMP_AGENT
+          snmp_oid: 'get[1.3.6.1.4.1.12356.101.10.115.1.5.0]'
+          key: fortipam.dns.forwarded.total
+          delay: 5m
+          tags:
+            - tag: class
+              value: dns
+            - tag: component
+              value: network
+        - uuid: 26ceb3d95e634d7290c69a98903395bc
+          name: 'FortiPAM: DNS requests'
+          type: SNMP_AGENT
+          snmp_oid: 'get[1.3.6.1.4.1.12356.101.10.115.1.3.0]'
+          key: fortipam.dns.requests.total
+          delay: 5m
+          tags:
+            - tag: class
+              value: dns
+            - tag: component
+              value: network
+        - uuid: 86ea3f7db0b644c6bd2a618ccb5ba583
+          name: 'FortiPAM: DNS responses'
+          type: SNMP_AGENT
+          snmp_oid: 'get[1.3.6.1.4.1.12356.101.10.115.1.4.0]'
+          key: fortipam.dns.responses.total
+          delay: 5m
+          tags:
+            - tag: class
+              value: dns
+            - tag: component
+              value: network
+        - uuid: cdaf06a2c1644685b4b72165eb190041
+          name: 'FortiPAM: DNS retransmissions'
+          type: SNMP_AGENT
+          snmp_oid: 'get[1.3.6.1.4.1.12356.101.10.115.1.6.0]'
+          key: fortipam.dns.retrans.total
+          delay: 5m
+          tags:
+            - tag: class
+              value: dns
+            - tag: component
+              value: network
+        - uuid: 5b4861cac05a4d44baa554ab174b5acb
+          name: 'FortiPAM: DNS timeouts'
+          type: SNMP_AGENT
+          snmp_oid: 'get[1.3.6.1.4.1.12356.101.10.115.1.7.0]'
+          key: fortipam.dns.timeouts.total
+          delay: 5m
+          tags:
+            - tag: class
+              value: dns
+            - tag: component
+              value: network
+          triggers:
+            - uuid: 9188bc01750749d38c69bcac466f6f52
+              expression: 'change(/Fortinet FortiPAM by SNMP/fortipam.dns.timeouts.total)>0'
+              name: 'FortiPAM: DNS Timeouts detected'
+              priority: WARNING
+        - uuid: 6e6dcfb32a524f579477e54b5080b2c8
+          name: 'FortiPAM: HA automatic sync'
+          type: SNMP_AGENT
+          snmp_oid: 'get[1.3.6.1.4.1.12356.101.13.1.5.0]'
+          key: fortipam.ha.autosync
+          delay: 5m
+          history: 90d
+          valuemap:
+            name: 'Fortinet Boolean State'
+          tags:
+            - tag: class
+              value: information
+            - tag: component
+              value: ha
+        - uuid: 1cccb7e846aa4fd4b45e87062c5d5816
+          name: 'FortiPAM: HA group ID'
+          type: SNMP_AGENT
+          snmp_oid: 'get[1.3.6.1.4.1.12356.101.13.1.2.0]'
+          key: fortipam.ha.groupid
+          delay: 5m
+          history: 90d
+          tags:
+            - tag: class
+              value: information
+            - tag: component
+              value: ha
+        - uuid: a836d4a03bda47d69a9ff08e0ac9efee
+          name: 'FortiPAM: HA group name'
+          type: SNMP_AGENT
+          snmp_oid: 'get[1.3.6.1.4.1.12356.101.13.1.7.0]'
+          key: fortipam.ha.groupname
+          delay: 5m
+          history: 90d
+          value_type: CHAR
+          tags:
+            - tag: class
+              value: information
+            - tag: component
+              value: ha
+        - uuid: 3267699187d94d0198a65aebed04c804
+          name: 'FortiPAM: HA mode'
+          type: SNMP_AGENT
+          snmp_oid: 'get[1.3.6.1.4.1.12356.101.13.1.1.0]'
+          key: fortipam.ha.mode
+          delay: 5m
+          history: 90d
+          valuemap:
+            name: 'Fortinet HA Mode'
+          tags:
+            - tag: class
+              value: information
+            - tag: component
+              value: ha
+        - uuid: a85251358173477eaf820809a1c3d078
+          name: 'FortiPAM: HA override'
+          type: SNMP_AGENT
+          snmp_oid: 'get[1.3.6.1.4.1.12356.101.13.1.4.0]'
+          key: fortipam.ha.override
+          delay: 5m
+          history: 90d
+          valuemap:
+            name: 'Fortinet Boolean State'
+          tags:
+            - tag: class
+              value: information
+            - tag: component
+              value: ha
+        - uuid: aa32c2d6074b4164b208f36ad0f66055
+          name: 'FortiPAM: HA priority'
+          type: SNMP_AGENT
+          snmp_oid: 'get[1.3.6.1.4.1.12356.101.13.1.3.0]'
+          key: fortipam.ha.priority
+          delay: 5m
+          history: 90d
+          tags:
+            - tag: class
+              value: information
+            - tag: component
+              value: ha
+        - uuid: c513ebb1a8a4408cb0cf29607d010318
+          name: 'FortiPAM: HA members SNMP walk'
+          type: SNMP_AGENT
+          snmp_oid: 'walk[1.3.6.1.4.1.12356.101.13.2.1.1.1,1.3.6.1.4.1.12356.101.13.2.1.1.2,1.3.6.1.4.1.12356.101.13.2.1.1.3,1.3.6.1.4.1.12356.101.13.2.1.1.4,1.3.6.1.4.1.12356.101.13.2.1.1.5,1.3.6.1.4.1.12356.101.13.2.1.1.6,1.3.6.1.4.1.12356.101.13.2.1.1.7,1.3.6.1.4.1.12356.101.13.2.1.1.8,1.3.6.1.4.1.12356.101.13.2.1.1.11,1.3.6.1.4.1.12356.101.13.2.1.1.12,1.3.6.1.4.1.12356.101.13.2.1.1.13,1.3.6.1.4.1.12356.101.13.2.1.1.14,1.3.6.1.4.1.12356.101.13.2.1.1.15,1.3.6.1.4.1.12356.101.13.2.1.1.16]'
+          key: fortipam.ha.walk
+          history: 1d
+          value_type: TEXT
+          tags:
+            - tag: class
+              value: master
+            - tag: component
+              value: ha
+        - uuid: b8269e26d8f14b64b8458f1612ac3a47
+          name: 'FortiPAM: License contracts SNMP walk'
+          type: SNMP_AGENT
+          snmp_oid: 'walk[1.3.6.1.4.1.12356.101.4.6.3.1.2.1.1,1.3.6.1.4.1.12356.101.4.6.3.1.2.1.2]'
+          key: fortipam.license.walk
+          delay: 1h
+          history: 1d
+          value_type: TEXT
+          tags:
+            - tag: class
+              value: information
+            - tag: component
+              value: license
+        - uuid: 7ef06ce2c747431c82986dc2853d0070
+          name: 'FortiPAM: Number of log devices'
+          type: SNMP_AGENT
+          snmp_oid: 'get[1.3.6.1.4.1.12356.101.21.1.1.0]'
+          key: fortipam.log.device.count
+          delay: 1h
+          history: 90d
+          tags:
+            - tag: class
+              value: information
+            - tag: component
+              value: logging
+        - uuid: eb22dd4db27a4b87a087646f4298b762
+          name: 'FortiPAM: Log devices SNMP walk'
+          type: SNMP_AGENT
+          snmp_oid: 'walk[1.3.6.1.4.1.12356.101.21.2.1.1.1,1.3.6.1.4.1.12356.101.21.2.1.1.2,1.3.6.1.4.1.12356.101.21.2.1.1.3,1.3.6.1.4.1.12356.101.21.2.1.1.4,1.3.6.1.4.1.12356.101.21.2.1.1.5,1.3.6.1.4.1.12356.101.21.2.1.1.6,1.3.6.1.4.1.12356.101.21.2.1.1.7,1.3.6.1.4.1.12356.101.21.2.1.1.8]'
+          key: fortipam.log.devices.walk
+          delay: 5m
+          history: 1d
+          value_type: TEXT
+          tags:
+            - tag: class
+              value: master
+            - tag: component
+              value: logging
+        - uuid: a4a2831898204773b53eaa3caf7debc7
+          name: 'FortiPAM: Log partition scan required'
+          type: SNMP_AGENT
+          snmp_oid: 'get[1.3.6.1.4.1.12356.101.4.1.21.0]'
+          key: fortipam.log.partition.scan
+          valuemap:
+            name: 'FortiPAM Log Scan Required'
+          tags:
+            - tag: class
+              value: health
+            - tag: component
+              value: disk
+          triggers:
+            - uuid: 6727e2cb65dd4926a77af520252f2922
+              expression: 'last(/Fortinet FortiPAM by SNMP/fortipam.log.partition.scan)=2'
+              name: 'FortiPAM Log Scan Required'
+              priority: HIGH
+        - uuid: 0121e855c51143129b2efce5660b7de1
+          name: 'FortiPAM: Memory buffers'
+          type: SNMP_AGENT
+          snmp_oid: 'get[1.3.6.1.4.1.12356.101.4.6.1.4.0]'
+          key: fortipam.memory.buffers
+          delay: 5m
+          units: B
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '1024'
+          tags:
+            - tag: class
+              value: health
+            - tag: component
+              value: memory
+        - uuid: e1b90dab1b2a40d986cea9821df0a361
+          name: 'FortiPAM: Memory active cache'
+          type: SNMP_AGENT
+          snmp_oid: 'get[1.3.6.1.4.1.12356.101.4.6.1.2.0]'
+          key: fortipam.memory.cache.active
+          delay: 5m
+          units: B
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '1024'
+          tags:
+            - tag: class
+              value: health
+            - tag: component
+              value: memory
+        - uuid: 80645d31911349279a7a4b6052200a21
+          name: 'FortiPAM: Memory inactive cache'
+          type: SNMP_AGENT
+          snmp_oid: 'get[1.3.6.1.4.1.12356.101.4.6.1.3.0]'
+          key: fortipam.memory.cache.inactive
+          delay: 5m
+          units: B
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '1024'
+          tags:
+            - tag: class
+              value: health
+            - tag: component
+              value: memory
+        - uuid: 5684e61475804314a9488f5a33f70881
+          name: 'FortiPAM: Kernel conserve enter threshold'
+          type: SNMP_AGENT
+          snmp_oid: 'get[1.3.6.1.4.1.12356.101.4.6.1.5.0]'
+          key: fortipam.memory.kernel.enter
+          delay: 1h
+          units: B
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '1024'
+          tags:
+            - tag: class
+              value: health
+            - tag: component
+              value: memory
+        - uuid: 9d5dc8952d524fe2bd1f7e8e127dfebc
+          name: 'FortiPAM: Kernel conserve leave threshold'
+          type: SNMP_AGENT
+          snmp_oid: 'get[1.3.6.1.4.1.12356.101.4.6.1.6.0]'
+          key: fortipam.memory.kernel.leave
+          delay: 1h
+          units: B
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '1024'
+          tags:
+            - tag: class
+              value: health
+            - tag: component
+              value: memory
+        - uuid: 4b784843a755458aabc00b97a12b6f30
+          name: 'FortiPAM: Memory page cache'
+          type: SNMP_AGENT
+          snmp_oid: 'get[1.3.6.1.4.1.12356.101.4.6.1.1.0]'
+          key: fortipam.memory.pagecache
+          delay: 5m
+          units: B
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '1024'
+          tags:
+            - tag: class
+              value: health
+            - tag: component
+              value: memory
+        - uuid: ec63d4dca4aa4f938aa933cd8bcad55f
+          name: 'FortiPAM: Proxy conserve enter threshold'
+          type: SNMP_AGENT
+          snmp_oid: 'get[1.3.6.1.4.1.12356.101.4.6.1.7.0]'
+          key: fortipam.memory.proxy.enter
+          delay: 1h
+          units: B
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '1024'
+          tags:
+            - tag: class
+              value: health
+            - tag: component
+              value: memory
+        - uuid: 0a62969c20984c098f2fb29f34bd12b2
+          name: 'FortiPAM: Proxy conserve leave threshold'
+          type: SNMP_AGENT
+          snmp_oid: 'get[1.3.6.1.4.1.12356.101.4.6.1.8.0]'
+          key: fortipam.memory.proxy.leave
+          delay: 1h
+          units: B
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '1024'
+          tags:
+            - tag: class
+              value: health
+            - tag: component
+              value: memory
+        - uuid: 1700df1ed55a417c9ea4546f61102945
+          name: 'FortiPAM: Memory capacity'
+          type: SNMP_AGENT
+          snmp_oid: 'get[1.3.6.1.4.1.12356.101.4.1.5.0]'
+          key: fortipam.memory.total
+          delay: 1h
+          units: B
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '1024'
+          tags:
+            - tag: class
+              value: health
+            - tag: component
+              value: memory
+        - uuid: 8a5a6f6f734443eaa5e801ecf71f018d
+          name: 'FortiPAM: Memory utilization'
+          type: SNMP_AGENT
+          snmp_oid: 'get[1.3.6.1.4.1.12356.101.4.1.4.0]'
+          key: fortipam.memory.util
+          units: '%'
+          tags:
+            - tag: class
+              value: health
+            - tag: component
+              value: memory
+          triggers:
+            - uuid: 2899b47c6f8440b1a1fdf91361a70727
+              expression: 'min(/Fortinet FortiPAM by SNMP/fortipam.memory.util,5m)>{$FORTIPAM.MEM.HIGH}'
+              name: 'Memory utilization critical'
+              priority: HIGH
+            - uuid: 93e8982998594c77b07f8ba456d4f768
+              expression: |
+                min(/Fortinet FortiPAM by SNMP/fortipam.memory.util,5m)>{$FORTIPAM.MEM.WARN}
+                and
+                min(/Fortinet FortiPAM by SNMP/fortipam.memory.util,5m)<={$FORTIPAM.MEM.HIGH}
+              name: 'Memory utilization high'
+              priority: WARNING
+        - uuid: e33e6c9b6de14c76b9f4c3ee41391064
+          name: 'FortiPAM: Processor SNMP walk'
+          type: SNMP_AGENT
+          snmp_oid: 'walk[1.3.6.1.4.1.12356.101.4.4.2.1.1,1.3.6.1.4.1.12356.101.4.4.2.1.2,1.3.6.1.4.1.12356.101.4.4.2.1.3,1.3.6.1.4.1.12356.101.4.4.2.1.9,1.3.6.1.4.1.12356.101.4.4.2.1.10]'
+          key: fortipam.processor.walk
+          value_type: TEXT
+          tags:
+            - tag: class
+              value: master
+            - tag: component
+              value: cpu
+        - uuid: 68e8123b959547bb9a45c8d3ad2b219d
+          name: 'FortiPAM: Reboot reason'
+          type: SNMP_AGENT
+          snmp_oid: 'get[1.3.6.1.4.1.12356.101.4.1.23.0]'
+          key: fortipam.reboot.reason
+          delay: 10m
+          value_type: CHAR
+          tags:
+            - tag: class
+              value: health
+            - tag: component
+              value: system
+        - uuid: 86f7238020c8407497528947920d33fc
+          name: 'FortiPAM: Session accept queue-full'
+          type: SNMP_AGENT
+          snmp_oid: 'get[1.3.6.1.4.1.12356.101.4.6.2.6.0]'
+          key: fortipam.sessions.acceptqfull.total
+          tags:
+            - tag: class
+              value: information
+            - tag: component
+              value: system
+          triggers:
+            - uuid: 5231285dc7364526896dd1b00da4b273
+              expression: 'change(/Fortinet FortiPAM by SNMP/fortipam.sessions.acceptqfull.total)>0'
+              name: 'Session accept queue became full'
+              priority: AVERAGE
+        - uuid: 94c170da3a174ef8ba668a0d0717431f
+          name: 'FortiPAM: Active sessions'
+          type: SNMP_AGENT
+          snmp_oid: 'get[1.3.6.1.4.1.12356.101.4.1.8.0]'
+          key: fortipam.sessions.active
+          tags:
+            - tag: class
+              value: information
+            - tag: component
+              value: system
+        - uuid: 1bf40879193040c9bfbaa53782f8de0e
+          name: 'FortiPAM: Session clash count'
+          type: SNMP_AGENT
+          snmp_oid: 'get[1.3.6.1.4.1.12356.101.4.6.2.3.0]'
+          key: fortipam.sessions.clash.total
+          tags:
+            - tag: class
+              value: information
+            - tag: component
+              value: system
+        - uuid: a9c8ce0a541b4c2bb38345933666e264
+          name: 'FortiPAM: Ephemeral sessions'
+          type: SNMP_AGENT
+          snmp_oid: 'get[1.3.6.1.4.1.12356.101.4.6.2.1.0]'
+          key: fortipam.sessions.ephemeral
+          tags:
+            - tag: class
+              value: information
+            - tag: component
+              value: system
+        - uuid: b6ccacecf9ac4d15a976e96a33f971b5
+          name: 'FortiPAM: Ephemeral session limit'
+          type: SNMP_AGENT
+          snmp_oid: 'get[1.3.6.1.4.1.12356.101.4.6.2.2.0]'
+          key: fortipam.sessions.ephemeral.limit
+          tags:
+            - tag: class
+              value: information
+            - tag: component
+              value: system
+        - uuid: 32acda8dca0e4986bc577eaff7c395c2
+          name: 'FortiPAM: Session expectation count'
+          type: SNMP_AGENT
+          snmp_oid: 'get[1.3.6.1.4.1.12356.101.4.6.2.4.0]'
+          key: fortipam.sessions.expectation.total
+          tags:
+            - tag: class
+              value: information
+            - tag: component
+              value: system
+        - uuid: b91fb0e1277b433fa377b024d182b604
+          name: 'FortiPAM: IPv4 sessions'
+          type: SNMP_AGENT
+          snmp_oid: 'get[1.3.6.1.4.1.12356.101.11.2.2.1.1.1]'
+          key: fortipam.sessions.ipv4
+          tags:
+            - tag: class
+              value: health
+            - tag: component
+              value: network
+        - uuid: 3f8f3c6545514ec9b6e5d766c28646df
+          name: 'FortiPAM: IPv6 sessions'
+          type: SNMP_AGENT
+          snmp_oid: 'get[1.3.6.1.4.1.12356.101.4.1.15.0]'
+          key: fortipam.sessions.ipv6
+          tags:
+            - tag: class
+              value: health
+            - tag: component
+              value: network
+        - uuid: 00a650de1eb44e6da2097ae26e7af259
+          name: 'FortiPAM: Session no-listener count'
+          type: SNMP_AGENT
+          snmp_oid: 'get[1.3.6.1.4.1.12356.101.4.6.2.7.0]'
+          key: fortipam.sessions.nolistener.total
+          tags:
+            - tag: class
+              value: information
+            - tag: component
+              value: system
+        - uuid: de624de791094ab59b6df95edbb7e475
+          name: 'FortiPAM: Session rate 1m'
+          type: SNMP_AGENT
+          snmp_oid: 'get[1.3.6.1.4.1.12356.101.4.1.11.0]'
+          key: fortipam.sessions.rate1
+          units: sess/s
+          tags:
+            - tag: class
+              value: information
+            - tag: component
+              value: system
+        - uuid: 38bffac9444c4faea4804c88d724d705
+          name: 'FortiPAM: Session rate 10m'
+          type: SNMP_AGENT
+          snmp_oid: 'get[1.3.6.1.4.1.12356.101.4.1.12.0]'
+          key: fortipam.sessions.rate10
+          units: sess/s
+          tags:
+            - tag: class
+              value: information
+            - tag: component
+              value: system
+        - uuid: 2bc1627fe7624cb0a2d3fb093ca5afd0
+          name: 'FortiPAM: Session rate 30m'
+          type: SNMP_AGENT
+          snmp_oid: 'get[1.3.6.1.4.1.12356.101.4.1.13.0]'
+          key: fortipam.sessions.rate30
+          units: sess/s
+          tags:
+            - tag: class
+              value: information
+            - tag: component
+              value: system
+        - uuid: 7638ab8b68bb4ce49a5add438d45a8ba
+          name: 'FortiPAM: Session rate 60m'
+          type: SNMP_AGENT
+          snmp_oid: 'get[1.3.6.1.4.1.12356.101.4.1.14.0]'
+          key: fortipam.sessions.rate60
+          units: sess/s
+          tags:
+            - tag: class
+              value: information
+            - tag: component
+              value: system
+        - uuid: 316784d22d074251a76940854949a2f6
+          name: 'FortiPAM: Session sync queue-full'
+          type: SNMP_AGENT
+          snmp_oid: 'get[1.3.6.1.4.1.12356.101.4.6.2.5.0]'
+          key: fortipam.sessions.syncqfull.total
+          tags:
+            - tag: class
+              value: information
+            - tag: component
+              value: system
+          triggers:
+            - uuid: 04d79316f8ea4733bc89c27ee61d3286
+              expression: 'change(/Fortinet FortiPAM by SNMP/fortipam.sessions.syncqfull.total)>0'
+              name: 'Session sync queue became full'
+              priority: AVERAGE
+        - uuid: 4787eda1a6ac4ef8ab7a5eeb0650e6b8
+          name: 'FortiPAM: Serial number'
+          type: SNMP_AGENT
+          snmp_oid: 'get[1.3.6.1.4.1.12356.100.1.1.1.0]'
+          key: fortipam.system.serial
+          delay: 1h
+          value_type: CHAR
+          tags:
+            - tag: class
+              value: information
+            - tag: component
+              value: system
+        - uuid: 41815a3642d54f78abe5a204e417bbd3
+          name: 'FortiPAM: Firmware version'
+          type: SNMP_AGENT
+          snmp_oid: 'get[1.3.6.1.4.1.12356.101.4.1.1.0]'
+          key: fortipam.system.version
+          delay: 1h
+          value_type: CHAR
+          tags:
+            - tag: class
+              value: information
+            - tag: component
+              value: system
+        - uuid: e63a9e228a2e48efbc6707e945c405c7
+          name: 'FortiPAM: Uptime'
+          type: SNMP_AGENT
+          snmp_oid: 'get[1.3.6.1.4.1.12356.101.4.1.20.0]'
+          key: fortipam.uptime
+          units: uptime
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '0.01'
+          tags:
+            - tag: class
+              value: information
+            - tag: component
+              value: system
+          triggers:
+            - uuid: d8022ee234c2475fb07c48de15ccc249
+              expression: 'last(/Fortinet FortiPAM by SNMP/fortipam.uptime)<600'
+              name: 'FortiPAM: Device has recently restarted'
+              priority: WARNING
+      discovery_rules:
+        - uuid: ccc589edf90345668b5191b85547108a
+          name: 'FortiPAM: HA member discovery'
+          type: DEPENDENT
+          key: fortipam.ha.discovery
+          item_prototypes:
+            - uuid: 8afd5ca524514711a2f67af520b1e1b3
+              name: 'FortiPAM: HA member {#HASERIAL}: Bytes processed'
+              type: DEPENDENT
+              key: 'fortipam.ha.bytes[{#SNMPINDEX}]'
+              units: B
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - '1.3.6.1.4.1.12356.101.13.2.1.1.8.{#SNMPINDEX}'
+                    - '0'
+              master_item:
+                key: fortipam.ha.walk
+            - uuid: 08bf3d62a29c42ef9128360081046da7
+              name: 'FortiPAM: HA member {#HASERIAL}: Global checksum'
+              type: DEPENDENT
+              key: 'fortipam.ha.checksum[{#SNMPINDEX}]'
+              value_type: CHAR
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - '1.3.6.1.4.1.12356.101.13.2.1.1.15.{#SNMPINDEX}'
+                    - '0'
+              master_item:
+                key: fortipam.ha.walk
+            - uuid: a9735efe5f604dbf91ffb84c2c8c589b
+              name: 'FortiPAM: HA member {#HASERIAL}: CPU utilization'
+              type: DEPENDENT
+              key: 'fortipam.ha.cpu[{#SNMPINDEX}]'
+              history: 30d
+              units: '%'
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - '1.3.6.1.4.1.12356.101.13.2.1.1.3.{#SNMPINDEX}'
+                    - '0'
+              master_item:
+                key: fortipam.ha.walk
+            - uuid: 80df9fb71e114a56872b68eae9af1339
+              name: 'FortiPAM: HA member {#HASERIAL}: Hostname'
+              type: DEPENDENT
+              key: 'fortipam.ha.hostname[{#SNMPINDEX}]'
+              value_type: CHAR
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - '1.3.6.1.4.1.12356.101.13.2.1.1.11.{#SNMPINDEX}'
+                    - '0'
+              master_item:
+                key: fortipam.ha.walk
+            - uuid: 2ef8a8cbab5b4f329efe9393256cbac1
+              name: 'FortiPAM: HA member {#HASERIAL}: Memory utilization'
+              type: DEPENDENT
+              key: 'fortipam.ha.memory[{#SNMPINDEX}]'
+              units: '%'
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - '1.3.6.1.4.1.12356.101.13.2.1.1.4.{#SNMPINDEX}'
+                    - '0'
+              master_item:
+                key: fortipam.ha.walk
+            - uuid: 414c38cc06fa4f94b722af26638908b6
+              name: 'FortiPAM: HA member {#HASERIAL}: Network usage'
+              type: DEPENDENT
+              key: 'fortipam.ha.network[{#SNMPINDEX}]'
+              units: Kbps
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - '1.3.6.1.4.1.12356.101.13.2.1.1.5.{#SNMPINDEX}'
+                    - '0'
+              master_item:
+                key: fortipam.ha.walk
+            - uuid: 064d90eeb69741209db1b4122671c0c0
+              name: 'FortiPAM: HA member {#HASERIAL}: Packets processed'
+              type: DEPENDENT
+              key: 'fortipam.ha.packets[{#SNMPINDEX}]'
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - '1.3.6.1.4.1.12356.101.13.2.1.1.7.{#SNMPINDEX}'
+                    - '0'
+              master_item:
+                key: fortipam.ha.walk
+            - uuid: 50fda61c874848c7a6f5a52f6cc29f9f
+              name: 'FortiPAM: HA member {#HASERIAL}: Primary serial'
+              type: DEPENDENT
+              key: 'fortipam.ha.primary.serial[{#SNMPINDEX}]'
+              value_type: CHAR
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - '1.3.6.1.4.1.12356.101.13.2.1.1.16.{#SNMPINDEX}'
+                    - '0'
+              master_item:
+                key: fortipam.ha.walk
+            - uuid: 280dd22b86344b518ce7135e27d1768f
+              name: 'FortiPAM: HA member {#HASERIAL}: Serial'
+              type: DEPENDENT
+              key: 'fortipam.ha.serial[{#SNMPINDEX}]'
+              history: 90d
+              value_type: CHAR
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - '1.3.6.1.4.1.12356.101.13.2.1.1.2.{#SNMPINDEX}'
+                    - '0'
+              master_item:
+                key: fortipam.ha.walk
+            - uuid: 1d1f16cdd66b4e88950796d468c7e649
+              name: 'FortiPAM: HA member {#HASERIAL}: Sessions'
+              type: DEPENDENT
+              key: 'fortipam.ha.sessions[{#SNMPINDEX}]'
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - '1.3.6.1.4.1.12356.101.13.2.1.1.6.{#SNMPINDEX}'
+                    - '0'
+              master_item:
+                key: fortipam.ha.walk
+            - uuid: eee149f140ab47f1a8d042f371483517
+              name: 'FortiPAM: HA member {#HASERIAL}: Last unsuccessful sync'
+              type: DEPENDENT
+              key: 'fortipam.ha.sync.lastfailure[{#SNMPINDEX}]'
+              units: unixtime
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - '1.3.6.1.4.1.12356.101.13.2.1.1.14.{#SNMPINDEX}'
+                    - '0'
+                - type: JAVASCRIPT
+                  parameters:
+                    - |
+                      var s = value.trim();
+                      
+                      var parts = s.split(/\s+/);
+                      if (parts.length < 8) {
+                          throw 'Invalid SNMP DateAndTime: ' + value;
+                      }
+                      
+                      var b = [];
+                      for (var i = 0; i < parts.length; i++) {
+                          b.push(parseInt(parts[i], 16));
+                      }
+                      
+                      var year = (b[0] << 8) + b[1];
+                      
+                      if (year === 0) {
+                          return null;
+                      }
+                      
+                      var month = b[2];
+                      var day   = b[3];
+                      var hour  = b[4];
+                      var min   = b[5];
+                      var sec   = b[6];
+                      var deci  = b[7];
+                      
+                      var ts = Date.UTC(
+                          year,
+                          month - 1,
+                          day,
+                          hour,
+                          min,
+                          sec,
+                          deci * 100
+                      );
+                      
+                      if (b.length >= 11) {
+                          var direction = String.fromCharCode(b[8]);
+                          var offsetMinutes = (b[9] * 60) + b[10];
+                      
+                          if (direction === '+') {
+                              ts -= offsetMinutes * 60000;
+                          } else if (direction === '-') {
+                              ts += offsetMinutes * 60000;
+                          }
+                      }
+                      
+                      return Math.floor(ts / 1000);
+              master_item:
+                key: fortipam.ha.walk
+            - uuid: a0f9f1a0298e429cae4a712d67538813
+              name: 'FortiPAM: HA member {#HASERIAL}: Last successful sync'
+              type: DEPENDENT
+              key: 'fortipam.ha.sync.lastsuccess[{#SNMPINDEX}]'
+              units: unixtime
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - '1.3.6.1.4.1.12356.101.13.2.1.1.13.{#SNMPINDEX}'
+                    - '0'
+                - type: JAVASCRIPT
+                  parameters:
+                    - |
+                      var s = value.trim();
+                      
+                      var parts = s.split(/\s+/);
+                      if (parts.length < 8) {
+                          throw 'Invalid SNMP DateAndTime: ' + value;
+                      }
+                      
+                      var b = [];
+                      for (var i = 0; i < parts.length; i++) {
+                          b.push(parseInt(parts[i], 16));
+                      }
+                      
+                      var year = (b[0] << 8) + b[1];
+                      
+                      if (year === 0) {
+                          return null;
+                      }
+                      
+                      var month = b[2];
+                      var day   = b[3];
+                      var hour  = b[4];
+                      var min   = b[5];
+                      var sec   = b[6];
+                      var deci  = b[7];
+                      
+                      var ts = Date.UTC(
+                          year,
+                          month - 1,
+                          day,
+                          hour,
+                          min,
+                          sec,
+                          deci * 100
+                      );
+                      
+                      if (b.length >= 11) {
+                          var direction = String.fromCharCode(b[8]);
+                          var offsetMinutes = (b[9] * 60) + b[10];
+                      
+                          if (direction === '+') {
+                              ts -= offsetMinutes * 60000;
+                          } else if (direction === '-') {
+                              ts += offsetMinutes * 60000;
+                          }
+                      }
+                      
+                      return Math.floor(ts / 1000);
+              master_item:
+                key: fortipam.ha.walk
+            - uuid: acae2eeb751649289585d965d72c41bc
+              name: 'FortiPAM: HA member {#HASERIAL}: Synchronization status'
+              type: DEPENDENT
+              key: 'fortipam.ha.sync[{#SNMPINDEX}]'
+              valuemap:
+                name: 'Fortinet HA Sync'
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - '1.3.6.1.4.1.12356.101.13.2.1.1.12.{#SNMPINDEX}'
+                    - '0'
+              master_item:
+                key: fortipam.ha.walk
+          trigger_prototypes:
+            - uuid: 7b6852fb7cdc43f9b8aad6945619f2b2
+              expression: |
+                last(/Fortinet FortiPAM by SNMP/fortipam.ha.mode)<>1
+                and
+                min(/Fortinet FortiPAM by SNMP/fortipam.ha.cpu[{#SNMPINDEX}],5m)>{$FORTIPAM.CPU.HIGH}
+              name: 'FortiPAM: HA member {#HASERIAL}: High CPU utilization'
+              priority: HIGH
+            - uuid: cd87307a6db54721b78db8a8058daeab
+              expression: |
+                last(/Fortinet FortiPAM by SNMP/fortipam.ha.mode)<>1
+                and
+                min(/Fortinet FortiPAM by SNMP/fortipam.ha.memory[{#SNMPINDEX}],5m)>{$FORTIPAM.MEM.HIGH}
+              name: 'FortiPAM: HA member {#HASERIAL}: High memory utilization'
+              priority: HIGH
+            - uuid: 575be465eb1a4a00a12e32e09aaf293c
+              expression: |
+                last(/Fortinet FortiPAM by SNMP/fortipam.ha.mode)<>1
+                and
+                last(/Fortinet FortiPAM by SNMP/fortipam.ha.sync[{#SNMPINDEX}])=0
+              name: 'FortiPAM: HA member {#HASERIAL} is out of synchronization'
+              priority: HIGH
+          master_item:
+            key: fortipam.ha.walk
+          preprocessing:
+            - type: SNMP_WALK_TO_JSON
+              parameters:
+                - '{#HAINDEX}'
+                - 1.3.6.1.4.1.12356.101.13.2.1.1.1
+                - '0'
+                - '{#HASERIAL}'
+                - 1.3.6.1.4.1.12356.101.13.2.1.1.2
+                - '0'
+                - '{#HAHOSTNAME}'
+                - 1.3.6.1.4.1.12356.101.13.2.1.1.11
+                - '0'
+                - '{#HASYNC}'
+                - 1.3.6.1.4.1.12356.101.13.2.1.1.12
+                - '0'
+        - uuid: c9aebb739a484d1db529391ce7d578e4
+          name: 'FortiPAM: License discovery'
+          type: DEPENDENT
+          key: fortipam.license.discovery
+          filter:
+            conditions:
+              - macro: '{#LICNAME}'
+                value: '{$FORTIPAM.LICENSE.MATCHES}'
+          item_prototypes:
+            - uuid: 47390529afc04077b225cbf6e6bd1e6e
+              name: 'FortiPAM: License {#LICNAME}: Expiry'
+              type: DEPENDENT
+              key: 'fortipam.license.expiry[{#SNMPINDEX}]'
+              units: unixtime
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - '1.3.6.1.4.1.12356.101.4.6.3.1.2.1.2.{#SNMPINDEX}'
+                    - '0'
+                - type: JAVASCRIPT
+                  parameters:
+                    - |
+                      if (value === '' || value === 'n/a') {
+                          throw 'License expiry unavailable';
+                      }
+                      
+                      var m = value.match(
+                          /^\w{3}\s+(\w{3})\s+(\d{1,2})\s+(\d{2}):(\d{2}):(\d{2})\s+(\d{4})$/
+                      );
+                      
+                      if (!m) {
+                          throw 'Unexpected Fortinet date: ' + value;
+                      }
+                      
+                      var months = {
+                          Jan: 0,
+                          Feb: 1,
+                          Mar: 2,
+                          Apr: 3,
+                          May: 4,
+                          Jun: 5,
+                          Jul: 6,
+                          Aug: 7,
+                          Sep: 8,
+                          Oct: 9,
+                          Nov: 10,
+                          Dec: 11
+                      };
+                      
+                      return Math.floor(Date.UTC(
+                          parseInt(m[6], 10),
+                          months[m[1]],
+                          parseInt(m[2], 10),
+                          parseInt(m[3], 10),
+                          parseInt(m[4], 10),
+                          parseInt(m[5], 10)
+                      ) / 1000);
+              master_item:
+                key: fortipam.license.walk
+              trigger_prototypes:
+                - uuid: bf15885751654c4c80b7fece6011e564
+                  expression: |
+                    last(/Fortinet FortiPAM by SNMP/fortipam.license.expiry[{#SNMPINDEX}])>now()
+                    and
+                    last(/Fortinet FortiPAM by SNMP/fortipam.license.expiry[{#SNMPINDEX}])<=now()+{$FORTIPAM.LICENSE.CRIT}
+                  name: 'FortiPAM: License {#LICNAME} expires in less than 7 days'
+                  priority: DISASTER
+                - uuid: 137aa17e5ff9402a8d1e9862371e748e
+                  expression: |
+                    last(/Fortinet FortiPAM by SNMP/fortipam.license.expiry[{#SNMPINDEX}])>now()+{$FORTIPAM.LICENSE.CRIT}
+                    and
+                    last(/Fortinet FortiPAM by SNMP/fortipam.license.expiry[{#SNMPINDEX}])<=now()+{$FORTIPAM.LICENSE.HIGH}
+                  name: 'FortiPAM: License {#LICNAME} expires in less than 30 days'
+                  priority: HIGH
+                - uuid: 338ef9f0d75f4fe891d07a789aaaa5e7
+                  expression: |
+                    last(/Fortinet FortiPAM by SNMP/fortipam.license.expiry[{#SNMPINDEX}])>now()+{$FORTIPAM.LICENSE.HIGH}
+                    and
+                    last(/Fortinet FortiPAM by SNMP/fortipam.license.expiry[{#SNMPINDEX}])<=now()+{$FORTIPAM.LICENSE.WARN}
+                  name: 'FortiPAM: License {#LICNAME} expires in less than 60 days'
+                  priority: WARNING
+                - uuid: c6ed347f696e40a38c0a1a386b0ced2a
+                  expression: 'last(/Fortinet FortiPAM by SNMP/fortipam.license.expiry[{#SNMPINDEX}])<=now()'
+                  name: 'FortiPAM: License {#LICNAME} has expired'
+                  priority: DISASTER
+          master_item:
+            key: fortipam.license.walk
+          preprocessing:
+            - type: SNMP_WALK_TO_JSON
+              parameters:
+                - '{#LICNAME}'
+                - 1.3.6.1.4.1.12356.101.4.6.3.1.2.1.1
+                - '0'
+                - '{#LICEXPIRY}'
+                - 1.3.6.1.4.1.12356.101.4.6.3.1.2.1.2
+                - '0'
+        - uuid: 95498b3c8fea46af81d36578b0da82c5
+          name: 'FortiPAM: Log device discovery'
+          type: DEPENDENT
+          key: fortipam.log.device.discovery
+          item_prototypes:
+            - uuid: 3c69d326792c4714ba505e5ac58705c5
+              name: 'FortiPAM: Log device {#LOGNAME}: Logs cached'
+              type: DEPENDENT
+              key: 'fortipam.log.cached[{#SNMPINDEX}]'
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - '1.3.6.1.4.1.12356.101.21.2.1.1.6.{#SNMPINDEX}'
+                    - '0'
+              master_item:
+                key: fortipam.log.devices.walk
+              trigger_prototypes:
+                - uuid: 01d216667b0d4310b29d357afcb000ed
+                  expression: 'min(/Fortinet FortiPAM by SNMP/fortipam.log.cached[{#SNMPINDEX}],10m)>0'
+                  name: 'FortiPAM: Log device {#LOGNAME}: Logs remain cached'
+                  priority: WARNING
+            - uuid: d260fe4f04d04f36ab01d4443fcd9017
+              name: 'FortiPAM: Log device {#LOGNAME}: Logs dropped'
+              type: DEPENDENT
+              key: 'fortipam.log.dropped[{#SNMPINDEX}]'
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - '1.3.6.1.4.1.12356.101.21.2.1.1.8.{#SNMPINDEX}'
+                    - '0'
+              master_item:
+                key: fortipam.log.devices.walk
+              trigger_prototypes:
+                - uuid: 1cabe8b1d26940299808cfff3a7b229b
+                  expression: 'change(/Fortinet FortiPAM by SNMP/fortipam.log.dropped[{#SNMPINDEX}])>0'
+                  name: 'FortiPAM: Log device {#LOGNAME}: Logs have been dropped'
+                  priority: HIGH
+            - uuid: 92e5e6e581f545ef8c83e01348455069
+              name: 'FortiPAM: Log device {#LOGNAME}: Enabled'
+              type: DEPENDENT
+              key: 'fortipam.log.enabled[{#SNMPINDEX}]'
+              valuemap:
+                name: 'FortiPAM Log Device Enabled'
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - '1.3.6.1.4.1.12356.101.21.2.1.1.2.{#SNMPINDEX}'
+                    - '0'
+              master_item:
+                key: fortipam.log.devices.walk
+            - uuid: 79b33447bf274ce1a5102028f45f0fc5
+              name: 'FortiPAM: Log device {#LOGNAME}: Logs failed'
+              type: DEPENDENT
+              key: 'fortipam.log.failed[{#SNMPINDEX}]'
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - '1.3.6.1.4.1.12356.101.21.2.1.1.7.{#SNMPINDEX}'
+                    - '0'
+              master_item:
+                key: fortipam.log.devices.walk
+              trigger_prototypes:
+                - uuid: 710cf62ca12f4e7ba8cce514bfff4fd2
+                  expression: 'change(/Fortinet FortiPAM by SNMP/fortipam.log.failed[{#SNMPINDEX}])>0'
+                  name: 'FortiPAM: Log device {#LOGNAME}: Log delivery failure detected'
+                  priority: HIGH
+            - uuid: 8f12a367018d48d6a34ca93f52bd610e
+              name: 'FortiPAM: Log device {#LOGNAME}: Logs relayed'
+              type: DEPENDENT
+              key: 'fortipam.log.relayed[{#SNMPINDEX}]'
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - '1.3.6.1.4.1.12356.101.21.2.1.1.5.{#SNMPINDEX}'
+                    - '0'
+              master_item:
+                key: fortipam.log.devices.walk
+            - uuid: 26b5cd674bf44f5f8bfd4a03e4a2cc3c
+              name: 'FortiPAM: Log device {#LOGNAME}: Send rate'
+              type: DEPENDENT
+              key: 'fortipam.log.sent.rate[{#SNMPINDEX}]'
+              units: logs/s
+              preprocessing:
+                - type: CHANGE_PER_SECOND
+              master_item:
+                key: 'fortipam.log.sent[{#SNMPINDEX}]'
+            - uuid: f61bf4acaab8477db742bd4a7997dcc8
+              name: 'FortiPAM: Log device {#LOGNAME}: Logs sent'
+              type: DEPENDENT
+              key: 'fortipam.log.sent[{#SNMPINDEX}]'
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - '1.3.6.1.4.1.12356.101.21.2.1.1.4.{#SNMPINDEX}'
+                    - '0'
+              master_item:
+                key: fortipam.log.devices.walk
+          master_item:
+            key: fortipam.log.devices.walk
+          preprocessing:
+            - type: SNMP_WALK_TO_JSON
+              parameters:
+                - '{#LOGINDEX}'
+                - 1.3.6.1.4.1.12356.101.21.2.1.1.1
+                - '0'
+                - '{#LOGENABLED}'
+                - 1.3.6.1.4.1.12356.101.21.2.1.1.2
+                - '0'
+                - '{#LOGNAME}'
+                - 1.3.6.1.4.1.12356.101.21.2.1.1.3
+                - '0'
+        - uuid: 78c8baf1b7024187850b6a867dc57ea5
+          name: 'FortiPAM: Processor discovery'
+          type: DEPENDENT
+          key: fortipam.processor.discovery
+          item_prototypes:
+            - uuid: 3ce19af7cde7466889af98f6bc5597ad
+              name: 'FortiPAM: CPU {#CPUINDEX}: System utilization'
+              type: DEPENDENT
+              key: 'fortipam.processor.system[{#SNMPINDEX}]'
+              units: '%'
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - '1.3.6.1.4.1.12356.101.4.4.2.1.10.{#SNMPINDEX}'
+                    - '0'
+              master_item:
+                key: fortipam.processor.walk
+            - uuid: d4dc0934913d42b299a65647c8dbbb40
+              name: 'FortiPAM: CPU {#CPUINDEX}: User utilization'
+              type: DEPENDENT
+              key: 'fortipam.processor.user[{#SNMPINDEX}]'
+              units: '%'
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - '1.3.6.1.4.1.12356.101.4.4.2.1.9.{#SNMPINDEX}'
+                    - '0'
+              master_item:
+                key: fortipam.processor.walk
+            - uuid: a66bb52d4168419a9c6524926e1cfcfe
+              name: 'FortiPAM: CPU {#CPUINDEX}: Utilization 5 sec'
+              type: DEPENDENT
+              key: 'fortipam.processor.util5sec[{#SNMPINDEX}]'
+              units: '%'
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - '1.3.6.1.4.1.12356.101.4.4.2.1.3.{#SNMPINDEX}'
+                    - '0'
+              master_item:
+                key: fortipam.processor.walk
+            - uuid: 41497eec5bd2488db06cbdac04c4615c
+              name: 'FortiPAM: CPU {#CPUINDEX}: Utilization'
+              type: DEPENDENT
+              key: 'fortipam.processor.util[{#SNMPINDEX}]'
+              units: '%'
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - '1.3.6.1.4.1.12356.101.4.4.2.1.2.{#SNMPINDEX}'
+                    - '0'
+              master_item:
+                key: fortipam.processor.walk
+              trigger_prototypes:
+                - uuid: 190c0e6443dc4b1799ce1fa2f39c5b32
+                  expression: 'min(/Fortinet FortiPAM by SNMP/fortipam.processor.util[{#SNMPINDEX}],5m)>{$FORTIPAM.CPU.CORE.HIGH}'
+                  name: 'FortiPAM: CPU {#CPUINDEX}: High utilization'
+                  priority: HIGH
+          graph_prototypes:
+            - uuid: 4e52f067e6aa405fb6c7f3e32c508975
+              name: 'FortiPAM: CPU {#CPUINDEX}'
+              yaxismax: '0'
+              graph_items:
+                - color: 1A7C11
+                  calc_fnc: ALL
+                  item:
+                    host: 'Fortinet FortiPAM by SNMP'
+                    key: 'fortipam.processor.system[{#SNMPINDEX}]'
+                - sortorder: '1'
+                  color: '274482'
+                  calc_fnc: ALL
+                  item:
+                    host: 'Fortinet FortiPAM by SNMP'
+                    key: 'fortipam.processor.user[{#SNMPINDEX}]'
+                - sortorder: '2'
+                  color: F63100
+                  calc_fnc: ALL
+                  item:
+                    host: 'Fortinet FortiPAM by SNMP'
+                    key: 'fortipam.processor.util[{#SNMPINDEX}]'
+          master_item:
+            key: fortipam.processor.walk
+          preprocessing:
+            - type: SNMP_WALK_TO_JSON
+              parameters:
+                - '{#CPUINDEX}'
+                - 1.3.6.1.4.1.12356.101.4.4.2.1.1
+                - '0'
+      tags:
+        - tag: class
+          value: network
+        - tag: target
+          value: fortinet
+        - tag: target
+          value: fortipam
+      macros:
+        - macro: '{$FORTIPAM.CPU.CORE.HIGH}'
+          value: '95'
+          description: 'CPU individual'
+        - macro: '{$FORTIPAM.CPU.HIGH}'
+          value: '90'
+          description: 'CPU High'
+        - macro: '{$FORTIPAM.CPU.WARN}'
+          value: '80'
+          description: 'CPU Warning'
+        - macro: '{$FORTIPAM.DISK.HIGH}'
+          value: '90'
+          description: 'Disk High'
+        - macro: '{$FORTIPAM.DISK.WARN}'
+          value: '80'
+          description: 'Disk Warning'
+        - macro: '{$FORTIPAM.LICENSE.CRIT}'
+          value: 7d
+        - macro: '{$FORTIPAM.LICENSE.HIGH}'
+          value: 30d
+        - macro: '{$FORTIPAM.LICENSE.MATCHES}'
+          value: ^FPAM$
+        - macro: '{$FORTIPAM.LICENSE.WARN}'
+          value: 60d
+        - macro: '{$FORTIPAM.MEM.HIGH}'
+          value: '90'
+          description: 'Memory High'
+        - macro: '{$FORTIPAM.MEM.WARN}'
+          value: '80'
+          description: 'Memory Warning'
+      valuemaps:
+        - uuid: d80d88bd379346d095a2b16eb5ce5e83
+          name: 'Fortinet Boolean State'
+          mappings:
+            - value: '1'
+              newvalue: Disabled
+            - value: '2'
+              newvalue: Enabled
+        - uuid: 7e3be0a4eeeb44569b640b3d149611b6
+          name: 'Fortinet HA Mode'
+          mappings:
+            - value: '1'
+              newvalue: Standalone
+            - value: '2'
+              newvalue: Active-Active
+            - value: '3'
+              newvalue: Active-Passive
+        - uuid: 23e73592c07848a4bd37ce8778b2457d
+          name: 'Fortinet HA State'
+          mappings:
+            - value: '1'
+              newvalue: Primary
+            - value: '2'
+              newvalue: Secondary
+            - value: '3'
+              newvalue: Standalone
+        - uuid: b81b98af5a2d4227a53bb8e8270eac8f
+          name: 'Fortinet HA Sync'
+          mappings:
+            - value: '0'
+              newvalue: Unsynchronized
+            - value: '1'
+              newvalue: Synchronized
+        - uuid: 1d0b43ef3bbc4f9089faefa2abcfdf88
+          name: 'Fortinet Operation Mode'
+          mappings:
+            - value: '1'
+              newvalue: NAT
+            - value: '2'
+              newvalue: Transparent
+        - uuid: 6cd45d3531d84dff8676692c18013dfd
+          name: 'FortiPAM Log Device Enabled'
+          mappings:
+            - value: '0'
+              newvalue: Disabled
+            - value: '1'
+              newvalue: Enabled
+        - uuid: 28afdb9055aa4cd7b9e60617475fefd5
+          name: 'FortiPAM Log Scan Required'
+          mappings:
+            - value: '1'
+              newvalue: 'No'
+            - value: '2'
+              newvalue: 'Yes'
+  triggers:
+    - uuid: fff82997df3b4e01b2797d0400e03035
+      expression: |
+        change(/Fortinet FortiPAM by SNMP/fortipam.config.serial)>0
+        and
+        last(/Fortinet FortiPAM by SNMP/fortipam.uptime)>600
+      name: 'FortiPAM: Configuration has changed'
+      priority: WARNING
